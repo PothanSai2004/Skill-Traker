@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skill Tracker Pro | React & Node.js Demo</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+        }
+        
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 20px;
+        }
+        
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            margin-bottom: 30px;
+            padding: 15px 25px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        .skill-card {
+            border-left: 4px solid var(--primary);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline-primary {
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 500;
+        }
+        
+        .modal-content {
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .skill-level-badge {
+            background-color: var(--success);
+            color: white;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 0.8rem;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray);
+            background-color: white;
+            border-radius: 16px;
+            margin: 2rem 0;
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            color: #dee2e6;
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 20px;
+            color: white;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-card h2 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        .stats-card p {
+            margin-bottom: 0;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .skill-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+            padding-top: 15px;
+        }
+        
+        .filter-bar {
+            background-color: white;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .search-box {
+            position: relative;
+            flex-grow: 1;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+        
+        .search-box input {
+            padding-left: 40px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            height: 45px;
+            width: 100%;
+        }
+        
+        .filter-select {
+            min-width: 150px;
+            border-radius: 8px;
+            height: 45px;
+            border: 1px solid #dee2e6;
+            padding: 0 15px;
+        }
+        
+        .skill-card .card-body {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        
+        .resource-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            color: var(--dark);
+        }
+        
+        @media (max-width: 768px) {
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-select {
+                width: 100%;
+            }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Mock API functions to simulate backend calls
+        const mockAPI = {
+            getSkills: () => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const skills = JSON.parse(localStorage.getItem('skills')) || [];
+                        resolve({ data: skills });
+                    }, 500);
+                });
+            },
+            
+            createSkill: (skill) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const skills = JSON.parse(localStorage.getItem('skills')) || [];
+                        const newSkill = {
+                            ...skill,
+                            id: Date.now().toString(),
+                            dateAdded: new Date().toISOString()
+                        };
+                        skills.push(newSkill);
+                        localStorage.setItem('skills', JSON.stringify(skills));
+                        resolve({ data: newSkill });
+                    }, 500);
+                });
+            },
+            
+            updateSkill: (id, updates) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const skills = JSON.parse(localStorage.getItem('skills')) || [];
+                        const index = skills.findIndex(s => s.id === id);
+                        if (index !== -1) {
+                            skills[index] = { ...skills[index], ...updates };
+                            localStorage.setItem('skills', JSON.stringify(skills));
+                            resolve({ data: skills[index] });
+                        } else {
+                            resolve({ error: 'Skill not found' });
+                        }
+                    }, 500);
+                });
+            },
+            
+            deleteSkill: (id) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        let skills = JSON.parse(localStorage.getItem('skills')) || [];
+                        skills = skills.filter(s => s.id !== id);
+                        localStorage.setItem('skills', JSON.stringify(skills));
+                        resolve({ success: true });
+                    }, 500);
+                });
+            }
+        };
+
+        const SkillCard = ({ skill, onEdit, onView, onDelete }) => {
+            return (
+                <div className="col-md-6 col-lg-4 mb-4">
+                    <div className="card skill-card h-100">
+                        <div className="card-body">
+                            <div className="d-flex justify-content-between align-items-start mb-2">
+                                <h5 className="card-title">{skill.name}</h5>
+                                <span className="badge skill-level-badge">{skill.level}</span>
+                            </div>
+                            <p className="card-text text-muted small mb-3">
+                                {skill.description.substring(0, 80)}
+                                {skill.description.length > 80 ? '...' : ''}
+                            </p>
+                            
+                            <div className="mb-3">
+                                <div className="d-flex justify-content-between align-items-center mb-1">
+                                    <small className="text-muted">Progress</small>
+                                    <small className="fw-bold">{skill.progress}%</small>
+                                </div>
+                                <div className="progress">
+                                    <div 
+                                        className="progress-bar" 
+                                        role="progressbar" 
+                                        style={{ width: `${skill.progress}%` }}
+                                        aria-valuenow={skill.progress} 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100"
+                                    ></div>
+                                </div>
+                            </div>
+                            
+                            {skill.resources && skill.resources.length > 0 && (
+                                <div className="mt-auto">
+                                    <small className="text-muted d-block mb-1">Resources:</small>
+                                    <div>
+                                        {skill.resources.slice(0, 3).map((resource, index) => (
+                                            <span key={index} className="resource-tag">
+                                                {resource}
+                                            </span>
+                                        ))}
+                                        {skill.resources.length > 3 && (
+                                            <span className="resource-tag">+{skill.resources.length - 3} more</span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <div className="card-footer bg-white">
+                            <div className="skill-actions">
+                                <button 
+                                    className="btn btn-sm btn-outline-primary flex-fill"
+                                    onClick={() => onView(skill)}
+                                >
+                                    <i className="fas fa-eye me-1"></i> View
+                                </button>
+                                <button 
+                                    className="btn btn-sm btn-outline-secondary"
+                                    onClick={() => onEdit(skill)}
+                                >
+                                    <i className="fas fa-edit"></i>
+                                </button>
+                                <button 
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => onDelete(skill.id)}
+                                >
+                                    <i className="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SkillForm = ({ skill, onSave, onCancel, isSaving }) => {
+            const [formData, setFormData] = useState({
+                name: '',
+                description: '',
+                level: 'Beginner',
+                progress: 50,
+                resources: ''
+            });
+            
+            useEffect(() => {
+                if (skill) {
+                    setFormData({
+                        name: skill.name || '',
+                        description: skill.description || '',
+                        level: skill.level || 'Beginner',
+                        progress: skill.progress || 50,
+                        resources: skill.resources ? skill.resources.join(', ') : ''
+                    });
+                }
+            }, [skill]);
+            
+            const handleChange = (e) => {
+                const { name, value } = e.target;
+                setFormData(prev => ({
+                    ...prev,
+                    [name]: value
+                }));
+            };
+            
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const resourcesArray = formData.resources.split(',').map(item => item.trim()).filter(item => item);
+                onSave({
+                    ...formData,
+                    progress: parseInt(formData.progress),
+                    resources: resourcesArray
+                });
+            };
+            
+            return (
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <label htmlFor="skillName" className="form-label">Skill Name *</label>
+                        <input 
+                            type="text" 
+                            className="form-control" 
+                            id="skillName"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required 
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="skillDescription" className="form-label">Description</label>
+                        <textarea 
+                            className="form-control" 
+                            id="skillDescription" 
+                            rows="3"
+                            name="description"
+                            value={formData.description}
+                            onChange={handleChange}
+                        ></textarea>
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="skillLevel" className="form-label">Proficiency Level</label>
+                        <select 
+                            className="form-select" 
+                            id="skillLevel"
+                            name="level"
+                            value={formData.level}
+                            onChange={handleChange}
+                        >
+                            <option value="Beginner">Beginner (0-25%)</option>
+                            <option value="Intermediate">Intermediate (26-75%)</option>
+                            <option value="Advanced">Advanced (76-99%)</option>
+                            <option value="Master">Master (100%)</option>
+                        </select>
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="skillProgress" className="form-label">Progress: {formData.progress}%</label>
+                        <input 
+                            type="range" 
+                            className="form-range" 
+                            id="skillProgress" 
+                            min="0" 
+                            max="100" 
+                            step="1"
+                            name="progress"
+                            value={formData.progress}
+                            onChange={handleChange}
+                        />
+                    </div>
+                    <div className="mb-3">
+                        <label htmlFor="skillResources" className="form-label">Learning Resources (comma separated)</label>
+                        <textarea 
+                            className="form-control" 
+                            id="skillResources" 
+                            rows="2"
+                            name="resources"
+                            value={formData.resources}
+                            onChange={handleChange}
+                            placeholder="Books, courses, tutorials..."
+                        ></textarea>
+                    </div>
+                    <div className="d-flex justify-content-end gap-2">
+                        <button type="button" className="btn btn-secondary" onClick={onCancel}>
+                            Cancel
+                        </button>
+                        <button type="submit" className="btn btn-primary" disabled={isSaving}>
+                            {isSaving ? <span className="loading-spinner"></span> : null}
+                            {isSaving ? ' Saving...' : (skill ? 'Update Skill' : 'Save Skill')}
+                        </button>
+                    </div>
+                </form>
+            );
+        };
+
+        const SkillTrackerApp = () => {
+            const [skills, setSkills] = useState([]);
+            const [filteredSkills, setFilteredSkills] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [showAddModal, setShowAddModal] = useState(false);
+            const [showEditModal, setShowEditModal] = useState(false);
+            const [showViewModal, setShowViewModal] = useState(false);
+            const [editingSkill, setEditingSkill] = useState(null);
+            const [viewingSkill, setViewingSkill] = useState(null);
+            const [saving, setSaving] = useState(false);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [filterLevel, setFilterLevel] = useState('all');
+            
+            useEffect(() => {
+                loadSkills();
+            }, []);
+            
+            useEffect(() => {
+                filterSkills();
+            }, [skills, searchTerm, filterLevel]);
+            
+            const loadSkills = async () => {
+                setLoading(true);
+                try {
+                    const response = await mockAPI.getSkills();
+                    setSkills(response.data);
+                } catch (error) {
+                    console.error('Error loading skills:', error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            const filterSkills = () => {
+                let result = skills;
+                
+                // Apply search filter
+                if (searchTerm) {
+                    const term = searchTerm.toLowerCase();
+                    result = result.filter(skill => 
+                        skill.name.toLowerCase().includes(term) || 
+                        skill.description.toLowerCase().includes(term) ||
+                        (skill.resources && skill.resources.some(r => r.toLowerCase().includes(term)))
+                    );
+                }
+                
+                // Apply level filter
+                if (filterLevel !== 'all') {
+                    result = result.filter(skill => skill.level === filterLevel);
+                }
+                
+                setFilteredSkills(result);
+            };
+            
+            const handleCreateSkill = async (skillData) => {
+                setSaving(true);
+                try {
+                    await mockAPI.createSkill(skillData);
+                    setShowAddModal(false);
+                    loadSkills(); // Reload skills
+                } catch (error) {
+                    console.error('Error creating skill:', error);
+                } finally {
+                    setSaving(false);
+                }
+            };
+            
+            const handleUpdateSkill = async (skillData) => {
+                setSaving(true);
+                try {
+                    await mockAPI.updateSkill(editingSkill.id, skillData);
+                    setShowEditModal(false);
+                    setEditingSkill(null);
+                    loadSkills(); // Reload skills
+                } catch (error) {
+                    console.error('Error updating skill:', error);
+                } finally {
+                    setSaving(false);
+                }
+            };
+            
+            const handleDeleteSkill = async (id) => {
+                if (window.confirm('Are you sure you want to delete this skill?')) {
+                    try {
+                        await mockAPI.deleteSkill(id);
+                        loadSkills(); // Reload skills
+                    } catch (error) {
+                        console.error('Error deleting skill:', error);
+                    }
+                }
+            };
+            
+            const openEditModal = (skill) => {
+                setEditingSkill(skill);
+                setShowEditModal(true);
+            };
+            
+            const openViewModal = (skill) => {
+                setViewingSkill(skill);
+                setShowViewModal(true);
+            };
+            
+            const stats = {
+                total: skills.length,
+                inProgress: skills.filter(s => s.progress > 0 && s.progress < 100).length,
+                completed: skills.filter(s => s.progress === 100).length,
+                averageProgress: skills.length ? 
+                    Math.round(skills.reduce((sum, s) => sum + parseInt(s.progress), 0) / skills.length) : 0
+            };
+            
+            return (
+                <div className="app-container">
+                    {/* Navigation */}
+                    <nav className="navbar">
+                        <div className="container-fluid">
+                            <span className="navbar-brand mb-0 h1 text-white">
+                                <i className="fas fa-brain me-2"></i>SkillTracker Pro
+                            </span>
+                            <button 
+                                className="btn btn-light"
+                                onClick={() => setShowAddModal(true)}
+                            >
+                                <i className="fas fa-plus me-1"></i> Add Skill
+                            </button>
+                        </div>
+                    </nav>
+                    
+                    {/* Stats Overview */}
+                    <div className="row mb-4">
+                        <div className="col-md-3">
+                            <div className="stats-card bg-primary">
+                                <h2>{stats.total}</h2>
+                                <p>Total Skills</p>
+                            </div>
+                        </div>
+                        <div className="col-md-3">
+                            <div className="stats-card bg-success">
+                                <h2>{stats.inProgress}</h2>
+                                <p>In Progress</p>
+                            </div>
+                        </div>
+                        <div className="col-md-3">
+                            <div className="stats-card bg-info">
+                                <h2>{stats.completed}</h2>
+                                <p>Completed</p>
+                            </div>
+                        </div>
+                        <div className="col-md-3">
+                            <div className="stats-card bg-warning">
+                                <h2>{stats.averageProgress}%</h2>
+                                <p>Avg. Progress</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* Filter Bar */}
+                    <div className="filter-bar">
+                        <div className="search-box">
+                            <i className="fas fa-search"></i>
+                            <input 
+                                type="text" 
+                                placeholder="Search skills..." 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <select 
+                            className="filter-select"
+                            value={filterLevel}
+                            onChange={(e) => setFilterLevel(e.target.value)}
+                        >
+                            <option value="all">All Levels</option>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
+                            <option value="Master">Master</option>
+                        </select>
+                        <div>
+                            <span className="text-muted">
+                                Showing {filteredSkills.length} of {skills.length} skills
+                            </span>
+                        </div>
+                    </div>
+                    
+                    {/* Skills Grid */}
+                    {loading ? (
+                        <div className="empty-state">
+                            <i className="fas fa-spinner fa-spin"></i>
+                            <h3>Loading your skills...</h3>
+                        </div>
+                    ) : filteredSkills.length === 0 ? (
+                        <div className="empty-state">
+                            <i className="fas fa-clipboard-list"></i>
+                            <h3>No skills found</h3>
+                            <p>Try changing your search or add a new skill to get started</p>
+                            <button 
+                                className="btn btn-primary mt-3"
+                                onClick={() => setShowAddModal(true)}
+                            >
+                                <i className="fas fa-plus me-1"></i> Add Your First Skill
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="row">
+                            {filteredSkills.map(skill => (
+                                <SkillCard 
+                                    key={skill.id} 
+                                    skill={skill}
+                                    onEdit={openEditModal}
+                                    onView={openViewModal}
+                                    onDelete={handleDeleteSkill}
+                                />
+                            ))}
+                        </div>
+                    )}
+                    
+                    {/* Add Skill Modal */}
+                    {showAddModal && (
+                        <div className="modal show d-block" tabIndex="-1">
+                            <div className="modal-dialog modal-lg">
+                                <div className="modal-content">
+                                    <div className="modal-header">
+                                        <h5 className="modal-title">Add New Skill</h5>
+                                        <button 
+                                            type="button" 
+                                            className="btn-close" 
+                                            onClick={() => setShowAddModal(false)}
+                                        ></button>
+                                    </div>
+                                    <div className="modal-body">
+                                        <SkillForm 
+                                            onSave={handleCreateSkill}
+                                            onCancel={() => setShowAddModal(false)}
+                                            isSaving={saving}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Edit Skill Modal */}
+                    {showEditModal && (
+                        <div className="modal show d-block" tabIndex="-1">
+                            <div className="modal-dialog modal-lg">
+                                <div className="modal-content">
+                                    <div className="modal-header">
+                                        <h5 className="modal-title">Edit Skill</h5>
+                                        <button 
+                                            type="button" 
+                                            className="btn-close" 
+                                            onClick={() => {
+                                                setShowEditModal(false);
+                                                setEditingSkill(null);
+                                            }}
+                                        ></button>
+                                    </div>
+                                    <div className="modal-body">
+                                        <SkillForm 
+                                            skill={editingSkill}
+                                            onSave={handleUpdateSkill}
+                                            onCancel={() => {
+                                                setShowEditModal(false);
+                                                setEditingSkill(null);
+                                            }}
+                                            isSaving={saving}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* View Skill Modal */}
+                    {showViewModal && viewingSkill && (
+                        <div className="modal show d-block" tabIndex="-1">
+                            <div className="modal-dialog">
+                                <div className="modal-content">
+                                    <div className="modal-header">
+                                        <h5 className="modal-title">Skill Details</h5>
+                                        <button 
+                                            type="button" 
+                                            className="btn-close" 
+                                            onClick={() => {
+                                                setShowViewModal(false);
+                                                setViewingSkill(null);
+                                            }}
+                                        ></button>
+                                    </div>
+                                    <div className="modal-body">
+                                        <h4>{viewingSkill.name}</h4>
+                                        <div className="d-flex justify-content-between align-items-center mb-3">
+                                            <span className="badge skill-level-badge">
+                                                {viewingSkill.level}
+                                            </span>
+                                            <span className="fw-bold">{viewingSkill.progress}% Complete</span>
+                                        </div>
+                                        <div className="progress mb-3">
+                                            <div 
+                                                className="progress-bar" 
+                                                role="progressbar" 
+                                                style={{ width: `${viewingSkill.progress}%` }}
+                                            ></div>
+                                        </div>
+                                        <p className="mb-3">{viewingSkill.description}</p>
+                                        
+                                        {viewingSkill.resources && viewingSkill.resources.length > 0 && (
+                                            <>
+                                                <h6>Learning Resources:</h6>
+                                                <div className="mb-3">
+                                                    {viewingSkill.resources.map((resource, index) => (
+                                                        <span key={index} className="resource-tag">
+                                                            {resource}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+                                        
+                                        <small className="text-muted">
+                                            Added on: {new Date(viewingSkill.dateAdded).toLocaleDateString()}
+                                        </small>
+                                    </div>
+                                    <div className="modal-footer">
+                                        <button 
+                                            type="button" 
+                                            className="btn btn-secondary" 
+                                            onClick={() => {
+                                                setShowViewModal(false);
+                                                setViewingSkill(null);
+                                            }}
+                                        >
+                                            Close
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            className="btn btn-primary"
+                                            onClick={() => {
+                                                setShowViewModal(false);
+                                                openEditModal(viewingSkill);
+                                            }}
+                                        >
+                                            Edit Skill
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Backdrop for modals */}
+                    {(showAddModal || showEditModal || showViewModal) && (
+                        <div className="modal-backdrop show"></div>
+                    )}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<SkillTrackerApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
