@@ -32,6 +32,7 @@ A full-stack CRUD application built with React frontend and Node.js/Express back
 - PUT /api/skills/:id - Update a skill
 - DELETE /api/skills/:id - Delete a skill
 
+
 ## Web Page Output:
 <img width="1863" height="1002" alt="Screenshot 2025-09-16 013052" src="https://github.com/user-attachments/assets/a7d0f880-8be0-4a5c-aa7b-83fb4bfad7f4" />
 ### Backed Data Storing:
